@@ -1,0 +1,16 @@
+vectorstore/
+bm25_index/
+.env
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+node_modules/
+dist/
+*.pkl
+.venv/
+venv/
+*.egg-info/
+.DS_Store
+evaluation/results.json
+backend/data/raw/
