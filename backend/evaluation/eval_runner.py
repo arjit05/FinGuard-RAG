@@ -14,6 +14,7 @@ from pipeline.retrieval import hybrid_retrieve
 from pipeline.reranker import rerank
 from pipeline.generator import generate
 from pipeline.guardrails import validate
+from config import RETRIEVAL_SCORE_THRESHOLD
 
 BENCHMARK_PATH = Path(__file__).parent / "benchmark.json"
 RESULTS_PATH = Path(__file__).parent / "results.json"
@@ -111,7 +112,7 @@ def run_evaluation() -> dict:
         em = _exact_match(expected_answer, actual_answer) if not is_out_of_corpus else (confidence == "UNSURE")
         sem = _semantic_sim(expected_answer, actual_answer) if not is_out_of_corpus else (1.0 if confidence == "UNSURE" else 0.0)
         is_refusal = confidence == "UNSURE"
-        is_hallucination = (retrieval_score < 0.35 and confidence in ("HIGH", "MEDIUM"))
+        is_hallucination = (retrieval_score < RETRIEVAL_SCORE_THRESHOLD and confidence in ("HIGH", "MEDIUM"))
 
         if em:
             exact_matches += 1

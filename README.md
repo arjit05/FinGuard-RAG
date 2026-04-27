@@ -6,42 +6,63 @@ Production-grade Retrieval-Augmented Generation pipeline over Indian financial r
 
 ## Quick Start
 
-### 1. Generate Synthetic PDFs
+**Prerequisites:** Python 3.10+, Node 18+, and a free Google AI Studio API key
+(grab one at https://aistudio.google.com/app/apikey).
+
+### One-shot setup
 
 ```bash
-cd finguard-rag/backend
+# Windows
+setup.bat
+
+# macOS / Linux / Git Bash
+./setup.sh
+```
+
+This creates `backend/.venv`, installs Python + npm dependencies, generates the
+7 synthetic PDFs, and ingests them into ChromaDB + BM25. The first run downloads
+the embedding and cross-encoder models (~200 MB) and takes a few minutes.
+
+### Add your API key
+
+Open `backend/.env` and set:
+
+```
+GOOGLE_API_KEY=<your key>
+```
+
+### Launch
+
+```bash
+# Windows  (opens backend + frontend in two new terminal windows)
+start.bat
+
+# macOS / Linux / Git Bash  (runs both in the foreground; Ctrl+C stops both)
+./start.sh
+```
+
+Then open http://localhost:5173.
+
+### Manual steps (if you'd rather)
+
+```bash
+cd backend
+python -m venv .venv && source .venv/bin/activate   # or .venv\Scripts\activate on Windows
 pip install -r requirements.txt
+cp .env.example .env                                  # add GOOGLE_API_KEY
 python scripts/make_synthetic_pdfs.py
-```
-
-### 2. Ingest Documents
-
-```bash
 python -c "from pipeline.ingestion import ingest_all; print(ingest_all('data/raw/'))"
-```
-
-### 3. Start Backend
-
-```bash
-cp .env.example .env
-# Add your ANTHROPIC_API_KEY to .env
 uvicorn main:app --port 8000 --reload
-```
 
-### 4. Start Frontend
-
-```bash
-cd ../frontend
-npm install
-npm run dev
-# Open http://localhost:5173
+# in a second terminal:
+cd frontend && npm install && npm run dev
 ```
 
 ## Architecture
 
 - **Retrieval**: BM25 + ChromaDB semantic search, merged hybrid
 - **Reranking**: `cross-encoder/ms-marco-MiniLM-L-6-v2`
-- **Generation**: Claude Sonnet via Anthropic SDK with prompt caching
+- **Generation**: Google Gemini 2.5 Flash via the `google-genai` SDK
 - **Guardrails**: 10-rule validator (PII redaction, hallucination guard, source citation enforcement, etc.)
 - **Injection defence**: 3-layer sanitiser (pattern match + length cap + system prompt hardening)
 
